@@ -80,14 +80,65 @@ class Pawn(Piece):
         else:
             self.direction = 1
 
-    # pawn_moves = [
-    #     ()
-    # ]
+    pawn_direction = (1, 0)
+    pawn_captures = [
+        (1, -1),
+        (1, 1)
+    ]
 
-    def getLegalMoves(self, row, col):
-        pass
+    def getLegalMoves(self, row, col, board, firstMove):
+        
+        moves = []
+        capturable_pieces = []
 
-    # will implement later since it's different
+        if firstMove:
+            for dr, dc in self.pawn_direction:
+                sqs_moved = 1
+
+                while sqs_moved < 3:
+                    new_row = row + (dr * sqs_moved)
+                    new_col = col + (dc * sqs_moved)
+
+
+                    # can't move out of the board on 1st move
+                    destination = board[new_row][new_col]
+                    if not isinstance(destination, Piece):
+                        moves.append((new_row, new_col))
+                        sqs_moved += 1
+                    else:
+                        break
+        else:
+            for dr, dc in self.pawn_direction:
+                new_row = row + dr
+                new_col = col + dc
+
+
+                if new_row >= 0 and new_row < 8:
+                    if new_col >= 0 and new_col < 8:
+                        destination = board[new_row][new_col]
+
+                        if not isinstance(destination, Piece):
+                            moves.append((new_row, new_col))
+
+        for ar, ac in self.pawn_captures:
+            new_row = row + ar
+            new_col = col + ac
+
+            
+            if new_row >= 0 and new_row < 8:
+                if new_col >= 0 and new_col < 8:
+                    destination = board[new_row][new_col]
+
+                    if isinstance(destination, Piece):
+                        if destination.getColor() == self.getColor():
+                            print('same team')
+                            continue
+                        else:
+                            moves.append((new_row, new_col))
+                            capturable_pieces.append((new_row, new_col))
+
+
+        return moves, capturable_pieces
 
 
 class Rook(Piece):
@@ -250,5 +301,31 @@ class King(Piece):
         (1, 1)
     ]
 
-    def getLegalMoves(self, row, col):
-        pass
+    def getLegalMoves(self, row, col, board):
+        
+
+        moves = []
+        capturable_pieces = []
+
+        for dr, dc in self.king_moves:
+            new_row = row + dr
+            new_col = col + dc
+
+
+            if new_row >= 0 and new_row < 8:
+                if new_col >= 0 and new_col < 8:
+                    destination = board[new_row][new_col]
+
+
+                    if isinstance(destination, Piece):
+                        if destination.getColor() == self.getColor():
+                            print('same team')
+                            continue
+                        else:
+                            moves.append((new_row, new_col))
+                            capturable_pieces.append((new_row, new_col))
+                    else:
+                        moves.append((new_row, new_col))
+
+
+        return moves, capturable_pieces
