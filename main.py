@@ -6,7 +6,36 @@
 class Board:
     def __init__(self):
         self.__grid = [[None] * 8 for i in range(8)]
+        self.boardSetup()
 
+    def showBoard(self):
+        return self.__grid
+    
+    def boardSetup(self):
+        # pawns
+        for i in range(8):
+            # black
+            self.__grid[1][i] = Pawn('black')
+            # white
+            self.__grid[6][i] = Pawn('white')
+
+        # other pieces
+        
+        # black
+        self.__grid[0][0], self.__grid[0][7] = Rook('black'), Rook('black')
+        self.__grid[0][1], self.__grid[0][6] = Knight('black'), Knight('black')
+        self.__grid[0][2], self.__grid[0][5] = Bishop('black'), Bishop('black')
+        self.__grid[0][3] = Queen('black')
+        self.__grid[0][4] = King('black')
+
+        # white
+        self.__grid[7][0], self.__grid[7][7] = Rook('white'), Rook('white')
+        self.__grid[7][1], self.__grid[7][6] = Knight('white'), Knight('white')
+        self.__grid[7][2], self.__grid[7][5] = Bishop('white'), Bishop('white')
+        self.__grid[7][3] = Queen('white')
+        self.__grid[7][4] = King('white')
+
+        print('Board setup complete!')
 
     def isOnBoard(self, row, col):
         if row >= 0 and row < 8:
@@ -29,8 +58,6 @@ class Board:
 # board = [[None]* 8  for i in range(8)]
 # for i in range(8):
 #     print(f'{board[i]}')
-
-board = Board()
 
 
 class Piece:
@@ -80,6 +107,7 @@ class Knight(Piece):
                 
                 if board.isEmpty(new_row, new_col):
                     moves.append((new_row, new_col))
+                    continue
                 elif board.isEnemy(new_row, new_col, self.getColor()):
                     moves.append((new_row, new_col))
                     capturable_pieces.append((new_row, new_col))
@@ -93,7 +121,7 @@ class Pawn(Piece):
     def __init__(self, color):
         super().__init__(color, 'P')
 
-        if color == 'White':
+        if color == 'white':
             self.direction = -1
         else:
             self.direction = 1
@@ -119,12 +147,11 @@ class Pawn(Piece):
 
 
                     # can't move out of the board on 1st move
-                    destination = board[new_row][new_col]
-                    if not isinstance(destination, Piece):
+                    if board.isEmpty(new_row, new_col):
                         moves.append((new_row, new_col))
                         sqs_moved += 1
-                    else:
-                        break
+                        continue
+                    break
         else:
             for dr, dc in self.pawn_direction:
                 new_row = row + (dr * self.direction)
@@ -132,9 +159,8 @@ class Pawn(Piece):
 
 
                 if board.isOnBoard(new_row, new_col):
-                    destination = board[new_row][new_col]
                     
-                    if not isinstance(destination, Piece):
+                    if board.isEmpty(new_row, new_col):
                         moves.append((new_row, new_col))
 
         for ar, ac in self.pawn_captures:
@@ -143,15 +169,9 @@ class Pawn(Piece):
 
             
             if board.isOnBoard(new_row, new_col):
-                destination = board[new_row][new_col]
-                
-                if isinstance(destination, Piece):
-                    if destination.getColor() == self.getColor():
-                        print('same team')
-                        continue
-                    else:
-                        moves.append((new_row, new_col))
-                        capturable_pieces.append((new_row, new_col))
+                if board.isEnemy(new_row, new_col, self.getColor()):
+                    moves.append((new_row, new_col))
+                    capturable_pieces.append((new_row, new_col))
 
 
         return moves, capturable_pieces
@@ -186,21 +206,16 @@ class Rook(Piece):
                 new_col = col + (dc * sqs_moved)
             
                 if board.isOnBoard(new_row, new_col):
-                    destination = board[new_row][new_col]
-                    if isinstance(destination, Piece):
-                        if destination.getColor() == self.getColor():
-                            print('same team')
-                        else:
-                            moves.append((new_row, new_col))
-                            capturable_pieces.append((new_row, new_col))
-                        # break loop if there's any piece in the way
-                        break 
-                    else:
+                    
+                    if board.isEmpty(new_row, new_col):
                         moves.append((new_row, new_col))
                         sqs_moved += 1
-                        # keep checking if square is empty
                         continue
-                # break loop if destination not on the board
+                    elif board.isEnemy(new_row, new_col, self.getColor()):
+                        moves.append((new_row, new_col))
+                        capturable_pieces.append((new_row, new_col))
+                
+                # break if there's a piece in the way or not on board
                 break
 
         return moves, capturable_pieces
@@ -233,18 +248,16 @@ class Bishop(Piece):
                 new_col = col + (dc * sqs_moved)
 
                 if board.isOnBoard(new_row, new_col):
-                    destination = board[new_row][new_col]
-                    if isinstance(destination, Piece):
-                        if destination.getColor() == self.getColor():
-                            print('same team')
-                        else:
-                            moves.append((new_row, new_col))
-                            capturable_pieces.append((new_row, new_col))
-                        break
-                    else:
+
+                    if board.isEmpty(new_row, new_col):
                         moves.append((new_row, new_col))
                         sqs_moved += 1
                         continue
+                    elif board.isEnemy(new_row, new_col, self.getColor()):
+                        moves.append((new_row, new_col))
+                        capturable_pieces.append((new_row, new_col))
+        
+
                 break
 
         return moves, capturable_pieces
@@ -281,18 +294,15 @@ class Queen(Piece):
                 new_col = col + (dc * sqs_moved)
 
                 if board.isOnBoard(new_row, new_col):
-                    destination = board[new_row][new_col]
-                    if isinstance(destination, Piece):
-                        if destination.getColor() == self.getColor():
-                            print('same team')
-                        else:
-                            moves.append((new_row, new_col))
-                            capturable_pieces.append((new_row, new_col))
-                        break
-                    else:
+                    
+                    if board.isEmpty(new_row, new_col):
                         moves.append((new_row, new_col))
                         sqs_moved += 1
                         continue
+                    elif board.isEnemy(new_row, new_col, self.getColor()):
+                        moves.append((new_row, new_col))
+                        capturable_pieces.append((new_row, new_col))
+
                 break
 
         return moves, capturable_pieces
@@ -326,16 +336,19 @@ class King(Piece):
 
 
             if board.isOnBoard(new_row, new_col):
-                destination = board[new_row][new_col]
-                if isinstance(destination, Piece):
-                    if destination.getColor() == self.getColor():
-                        print('same team')
-                        continue
-                    else:
-                        moves.append((new_row, new_col))
-                        capturable_pieces.append((new_row, new_col))
-                else:
+                
+                if board.isEmpty(new_row, new_col):
                     moves.append((new_row, new_col))
-
+                    continue
+                elif board.isEnemy(new_row, new_col, self.getColor()):
+                    moves.append((new_row, new_col))
+                    capturable_pieces.append((new_row, new_col))
 
         return moves, capturable_pieces
+    
+
+
+
+board = Board()
+
+print(board.showBoard())
