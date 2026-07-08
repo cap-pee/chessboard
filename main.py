@@ -7,6 +7,7 @@ class Board:
     def __init__(self):
         self.__grid = [[None] * 8 for i in range(8)]
         self.boardSetup()
+        self.currentTurn = 'white'
 
     def showBoard(self):
         return self.__grid
@@ -42,7 +43,6 @@ class Board:
             if col >= 0 and col < 8:
                 return True
         return False
-    
 
     def isEmpty(self, row, col):
         if self.__grid[row][col] == None:
@@ -54,6 +54,101 @@ class Board:
             return True
         return False
     
+    def getPiece(self, row, col):
+        return self.__grid[row][col]
+    
+    def setPiece(self, row, col, piece):
+        self.__grid[row][col] = piece
+    
+    def movePiece(self, start_row, start_col, end_row, end_col):
+        if self.isEmpty(start_row, start_col):
+            return
+        piece = self.getPiece(start_row, start_col)
+        if piece.getColor() == self.currentTurn:
+            self.__grid[start_row][start_col], self.__grid[end_row][end_col] = None, piece
+            if self.currentTurn == 'white':
+                self.currentTurn = 'black'
+            else:
+                self.currentTurn = 'white'
+    
+    def findKing(self, color):
+        for i in range(8):
+            for j in range(8):
+                if not self.isEmpty(i, j):
+                    piece = self.getPiece(i, j)
+                    if piece.getType() == 'K':
+                        if piece.getColor() == color:
+                            return (i, j)
+                        
+    def getAllMoves(self, color):
+        allmoves = []
+
+        for i in range(8):
+            for j in range(8):
+                if not self.isEmpty(i, j):
+                    piece = self.getPiece(i, j)
+                    if piece.getColor() == color:
+                        allmoves.extend(piece.getLegalMoves(i, j, self)[0])
+        
+        return allmoves
+
+    def isChecked(self, color):
+        king = self.findKing(color)
+        
+        enemycolor = 'white'
+        
+        if color == 'white':
+            enemycolor = 'black'
+        
+        moves = self.getAllMoves(enemycolor)
+
+        for move in moves:
+            if move == king:
+                return True
+        return False
+
+    def getLegalMoves(self, row, col):
+        if not self.isEmpty(row, col):
+            piece = self.getPiece(row, col)
+            moves = piece.getLegalMoves(row, col, self)[0]
+            legalMoves = []
+            for move in moves:
+                dest = self.getPiece(move[0], move[1])
+                self.setPiece(move[0], move[1], piece)
+                self.setPiece(row, col, None)
+                if self.isChecked(piece.getColor()):
+                    self.setPiece(move[0], move[1], dest)
+                    self.setPiece(row, col, piece)
+                    continue
+                legalMoves.append(move)
+                self.setPiece(move[0], move[1], dest)
+                self.setPiece(row, col, piece)
+            
+            return legalMoves
+        
+    def getAllLegalMoves(self, color):
+        allLegalMoves = []
+
+        for i in range(8):
+            for j in range(8):
+                if not self.isEmpty(i, j):
+                    piece = self.getPiece(i, j)
+                    if piece.getColor() == color:
+                        allLegalMoves.extend(self.getLegalMoves(i, j))
+
+        return allLegalMoves
+    
+    def isCheckMate(self, color):
+        if self.isChecked(color):
+            if len(self.getAllLegalMoves(color)) == 0:
+                return True
+        return False
+    
+    def isStaleMate(self, color):
+        if not self.isChecked(color):
+            if len(self.getAllLegalMoves(color)) == 0:
+                return True
+        return False
 
 # board = [[None]* 8  for i in range(8)]
 # for i in range(8):
