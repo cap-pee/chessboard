@@ -50,6 +50,8 @@ class Board:
         return False
     
     def isEnemy(self, row, col, color):
+        if self.isEmpty(row, col):
+            return False
         if self.__grid[row][col].getColor() != color:
             return True
         return False
@@ -165,6 +167,31 @@ class Board:
                 return True
         return False
 
+    def displayBoard(self):
+        print('      0   1    2   3   4    5   6   7')
+        for i in range(8):
+            pieces = ''
+            for j in range(8):
+                if self.isEmpty(i, j):
+                    piece = '.'
+                    pieces = pieces + '   ' + piece
+                    continue
+                piece = self.getPiece(i, j)
+                pType = piece.getType()
+                pColor = piece.getColor()
+                if pColor == 'white':
+                    pColor = 'W'
+                else:
+                    pColor = 'B'
+                piece = pType + '|' + pColor
+                pieces = pieces + ' ' + piece
+            print(f'{i} | {pieces}')
+
+    def clearBoard(self):
+        for i in range(8):
+            for j in range(8):
+                self.setPiece(i, j, None)
+
 # board = [[None]* 8  for i in range(8)]
 # for i in range(8):
 #     print(f'{board[i]}')
@@ -238,7 +265,7 @@ class Pawn(Piece):
         
         self.firstMove = True
 
-    pawn_direction = (1, 0)
+    pawn_direction = [(1, 0)]
     pawn_captures = [
         (1, -1),
         (1, 1)
@@ -461,6 +488,4 @@ class King(Piece):
 
 
 
-board = Board()
-
-print(board.showBoard())
+# board = Board()
