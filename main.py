@@ -65,11 +65,19 @@ class Board:
             return
         piece = self.getPiece(start_row, start_col)
         if piece.getColor() == self.currentTurn:
-            self.__grid[start_row][start_col], self.__grid[end_row][end_col] = None, piece
-            if self.currentTurn == 'white':
-                self.currentTurn = 'black'
-            else:
-                self.currentTurn = 'white'
+            if self.isLegal(start_row, start_col, end_row, end_col):
+                self.__grid[start_row][start_col], self.__grid[end_row][end_col] = None, piece
+                
+                # pawn
+                if piece.getType() == 'P':
+                    if piece.firstMove:
+                        piece.firstMove = False
+
+                # turns
+                if self.currentTurn == 'white':
+                    self.currentTurn = 'black'
+                else:
+                    self.currentTurn = 'white' 
     
     def findKing(self, color):
         for i in range(8):
@@ -149,6 +157,13 @@ class Board:
             if len(self.getAllLegalMoves(color)) == 0:
                 return True
         return False
+    
+    def isLegal(self, start_row, start_col, end_row, end_col):
+        allLegalMoves = self.getLegalMoves(start_row, start_col)
+        for move in allLegalMoves:
+            if move == (end_row, end_col):
+                return True
+        return False
 
 # board = [[None]* 8  for i in range(8)]
 # for i in range(8):
@@ -220,6 +235,8 @@ class Pawn(Piece):
             self.direction = -1
         else:
             self.direction = 1
+        
+        self.firstMove = True
 
     pawn_direction = (1, 0)
     pawn_captures = [
@@ -227,12 +244,12 @@ class Pawn(Piece):
         (1, 1)
     ]
 
-    def getLegalMoves(self, row, col, board, firstMove):
+    def getLegalMoves(self, row, col, board):
         
         moves = []
         capturable_pieces = []
 
-        if firstMove:
+        if self.firstMove:
             for dr, dc in self.pawn_direction:
                 sqs_moved = 1
 
