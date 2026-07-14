@@ -1,5 +1,5 @@
-
-
+from __future__ import annotations
+from typing import NamedTuple
 
 
 
@@ -62,25 +62,67 @@ class Board:
     def setPiece(self, row, col, piece):
         self.__grid[row][col] = piece
     
-    def movePiece(self, start_row, start_col, end_row, end_col):
-        if self.isEmpty(start_row, start_col):
-            return
-        piece = self.getPiece(start_row, start_col)
-        if piece.getColor() == self.currentTurn:
-            if self.isLegal(start_row, start_col, end_row, end_col):
-                self.__grid[start_row][start_col], self.__grid[end_row][end_col] = None, piece
-                
-                # pawn
-                if piece.getType() == 'P':
-                    if piece.firstMove:
-                        piece.firstMove = False
 
-                # turns
-                if self.currentTurn == 'white':
-                    self.currentTurn = 'black'
-                else:
-                    self.currentTurn = 'white' 
+    class MoveRecord(NamedTuple):
+        piece: Piece | None
+        capturedPiece: Piece | None
+        startRow: int
+        startCol: int
+        endRow: int
+        endCol: int
+        wasFirstMove: bool
+        previousTurn: str
+
+
+    # this will store and return the previous state so the move can be easily undone
+    def makeMove(self, startRow, startCol, endRow, endCol):
+        piece = self.getPiece(startRow, startCol)
+        capturedPiece = None
+        wasFirstMove = None
+        previousTurn = self.currentTurn
+
+        if not self.isEmpty(endRow, endCol):
+            capturedPiece = self.getPiece(endRow, endCol)
+        if piece.getType() == 'P':
+            wasFirstMove = piece.firstMove
+            if wasFirstMove:
+                piece.firstMove = False
+        
+        if self.currentTurn == 'white':
+            self.currentTurn = 'black'
+        else:
+            self.currentTurn = 'white'
+
+        self.__grid[startRow][startCol], self.__grid[endRow][endCol] = None, piece
+
+        return self.MoveRecord(piece, capturedPiece, startRow, startCol, endRow, endCol, wasFirstMove, previousTurn)
+        
     
+    def undoMove(self, moveRecord):
+        piece = moveRecord.piece
+        capturedPiece = moveRecord.capturedPiece
+        startRow = moveRecord.startRow
+        startCol = moveRecord.startCol
+        endRow = moveRecord.endRow
+        endCol = moveRecord.endCol
+        wasFirstMove = moveRecord.wasFirstMove
+        previousTurn = moveRecord.previousTurn
+
+        self.__grid[startRow][startCol], self.__grid[endRow][endCol] = piece, capturedPiece
+        if wasFirstMove is not None:
+            piece.firstMove = wasFirstMove
+        self.currentTurn = previousTurn
+
+
+    def movePiece(self, startRow, startCol, endRow, endCol):
+        if self.isEmpty(startRow, startCol):
+            return
+        piece = self.getPiece(startRow, startCol)
+        if piece.getColor() == self.currentTurn:
+            if self.isLegal(startRow, startCol, endRow, endCol):
+                self.makeMove(startRow, startCol, endRow, endCol)
+    
+
     def findKing(self, color):
         for i in range(8):
             for j in range(8):
@@ -98,7 +140,7 @@ class Board:
                 if not self.isEmpty(i, j):
                     piece = self.getPiece(i, j)
                     if piece.getColor() == color:
-                        allmoves.extend(piece.getLegalMoves(i, j, self)[0])
+                        allmoves.extend(piece.getPseudoLegalMoves(i, j, self)[0])
         
         return allmoves
 
@@ -117,24 +159,23 @@ class Board:
                 return True
         return False
 
+
     def getLegalMoves(self, row, col):
         if not self.isEmpty(row, col):
             piece = self.getPiece(row, col)
-            moves = piece.getLegalMoves(row, col, self)[0]
+            moves = piece.getPseudoLegalMoves(row, col, self)[0]
             legalMoves = []
             for move in moves:
-                dest = self.getPiece(move[0], move[1])
-                self.setPiece(move[0], move[1], piece)
-                self.setPiece(row, col, None)
+                moveInfo = self.makeMove(row, col, move[0], move[1])
+
                 if self.isChecked(piece.getColor()):
-                    self.setPiece(move[0], move[1], dest)
-                    self.setPiece(row, col, piece)
+                    self.undoMove(moveInfo)
                     continue
                 legalMoves.append(move)
-                self.setPiece(move[0], move[1], dest)
-                self.setPiece(row, col, piece)
+                self.undoMove(moveInfo)
             
             return legalMoves
+
         
     def getAllLegalMoves(self, color):
         allLegalMoves = []
@@ -160,10 +201,10 @@ class Board:
                 return True
         return False
     
-    def isLegal(self, start_row, start_col, end_row, end_col):
-        allLegalMoves = self.getLegalMoves(start_row, start_col)
+    def isLegal(self, startRow, startCol, endRow, endCol):
+        allLegalMoves = self.getLegalMoves(startRow, startCol)
         for move in allLegalMoves:
-            if move == (end_row, end_col):
+            if move == (endRow, endCol):
                 return True
         return False
 
@@ -227,7 +268,7 @@ class Knight(Piece):
         (2, 1)
         ]
 
-    def getLegalMoves(self, row, col, board):
+    def getPseudoLegalMoves(self, row, col, board):
         # current possible moves
 
         moves = []
@@ -271,7 +312,7 @@ class Pawn(Piece):
         (1, 1)
     ]
 
-    def getLegalMoves(self, row, col, board):
+    def getPseudoLegalMoves(self, row, col, board):
         
         moves = []
         capturable_pieces = []
@@ -329,7 +370,7 @@ class Rook(Piece):
         (0, 1)
     ]
 
-    def getLegalMoves(self, row, col, board):
+    def getPseudoLegalMoves(self, row, col, board):
         # current possible moves
 
         moves = []
@@ -373,7 +414,7 @@ class Bishop(Piece):
         (1, 1)
     ]
 
-    def getLegalMoves(self, row, col, board):
+    def getPseudoLegalMoves(self, row, col, board):
 
         moves = []
         capturable_pieces = []
@@ -418,7 +459,7 @@ class Queen(Piece):
         (1, 1)
     ]
 
-    def getLegalMoves(self, row, col, board):
+    def getPseudoLegalMoves(self, row, col, board):
         
 
         moves = []
@@ -463,7 +504,7 @@ class King(Piece):
         (1, 1)
     ]
 
-    def getLegalMoves(self, row, col, board):
+    def getPseudoLegalMoves(self, row, col, board):
         
 
         moves = []
