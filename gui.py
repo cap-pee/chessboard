@@ -1,5 +1,6 @@
 import pygame
 from main import *
+from ai import minimax
 
 pygame.init()
 
@@ -99,7 +100,7 @@ def legalMoves(surface, x, y):
     moves = board.getLegalMoves(row, col)
     rects = []
     for move in moves:
-        x, y = convertToPygame(move[0], move[1])
+        x, y = convertToPygame(move[2], move[3])
 
         rects.append(pygame.Rect(x, y, SQUARESIZE, SQUARESIZE))
     for rect in rects:
@@ -170,7 +171,7 @@ while running:
     # print(click)
     mouse = pygame.mouse.get_pos()
     if clicks:
-        print(clicks)
+        # print(clicks)
         legalMoves(screen, clicks[0][0], clicks[0][1])
         dragPiece(screen, clicks[0][0], clicks[0][1], mouse[0], mouse[1])
         if len(clicks) == 2:
@@ -181,7 +182,7 @@ while running:
                 gameOver(screen, 'White')
             clicks.clear()
 
-
+    print(minimax(board, 1))
     pygame.display.flip()
     clock.tick(60)
 

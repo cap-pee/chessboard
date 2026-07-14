@@ -171,7 +171,9 @@ class Board:
                 if self.isChecked(piece.getColor()):
                     self.undoMove(moveInfo)
                     continue
-                legalMoves.append(move)
+                # add starting position to every move
+                fullTuple = (row, col) + move
+                legalMoves.append(fullTuple)
                 self.undoMove(moveInfo)
             
             return legalMoves
@@ -204,7 +206,8 @@ class Board:
     def isLegal(self, startRow, startCol, endRow, endCol):
         allLegalMoves = self.getLegalMoves(startRow, startCol)
         for move in allLegalMoves:
-            if move == (endRow, endCol):
+            endCoords = move[2], move[3]
+            if endCoords == (endRow, endCol):
                 return True
         return False
 
@@ -529,4 +532,5 @@ class King(Piece):
 
 
 
-# board = Board()
+board = Board()
+print(board.getLegalMoves(1, 2))
