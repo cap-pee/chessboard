@@ -1,6 +1,6 @@
 import pygame
 from main import *
-from ai import minimax
+from ai import *
 
 pygame.init()
 
@@ -182,7 +182,7 @@ while running:
                 gameOver(screen, 'White')
             clicks.clear()
 
-    print(minimax(board, 1))
+    # print(findBestMove(board, 1))
     pygame.display.flip()
     clock.tick(60)
 
