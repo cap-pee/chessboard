@@ -4,6 +4,8 @@ from main import Board
 
 def minimax(board, depth):
 
+    # add logic for checking for checkmate/stalemate
+
     if depth == 0:
         score = evaluate(board)
         return score
