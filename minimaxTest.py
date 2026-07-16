@@ -11,10 +11,10 @@ board.setPiece(0, 4, King('black'))
 board.setPiece(4, 4, Queen('white'))
 board.setPiece(4, 5, Queen('black'))
 
-board.currentTurn = 'white'
+board.currentTurn = 'black'
 
 import time
 start = time.time()
-move = findBestMove(board, 5)
+move = findBestMove(board, 2)
 print("Best move:", move)
 print("Time taken:", time.time() - start, 'sec')

@@ -3,13 +3,6 @@ from main import Board
 
 
 def minimax(board, depth):
-
-    # add logic for checking for checkmate/stalemate
-
-    if depth == 0:
-        score = evaluate(board)
-        return score
-    
     maximize = True
     color = board.currentTurn
     if color == 'black':
@@ -21,6 +14,20 @@ def minimax(board, depth):
         bestScore = -10000000000
     else:
         bestScore = 10000000000
+    
+    # checking for checkmate/stalemate
+    if len(allmoves) == 0:
+        if board.isChecked(color):
+            if maximize:
+                return -1000000000000000000000
+            return 1000000000000000000000
+        return 0
+
+
+    if depth == 0:
+        score = evaluate(board)
+        return score
+    
 
     for move in allmoves:
         moveInfo = board.makeMove(move[0], move[1], move[2], move[3])
