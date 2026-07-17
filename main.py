@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import NamedTuple
-
+import ai as ai
 
 
 class Board:
@@ -235,6 +235,10 @@ class Board:
         for i in range(8):
             for j in range(8):
                 self.setPiece(i, j, None)
+    
+    def aiMove(self):
+        move = ai.findBestMove(self, 3)
+        self.makeMove(move[0], move[1], move[2], move[3])
 
 # board = [[None]* 8  for i in range(8)]
 # for i in range(8):

@@ -1,5 +1,6 @@
 import pygame
 from main import *
+from ai import *
 
 pygame.init()
 
@@ -9,11 +10,20 @@ pygame.display.set_caption('Chess')
 clock = pygame.time.Clock()
 
 board = Board()
-board.boardSetup()
+# board.boardSetup()
+board.clearBoard()
+
+
+board.setPiece(7, 4, King('white'))
+board.setPiece(0, 4, King('black'))
+board.setPiece(4, 4, Queen('white'))
+board.setPiece(4, 5, Queen('black'))
+
+board.currentTurn = 'black'
+
+
 
 SQUARESIZE = 100
-
-font = pygame.font.Font(None, 28)
 
 
 bishopImgW = pygame.image.load('./assets/images/white_bishop.png')
@@ -131,15 +141,8 @@ def movePiece(x, y, mouseX, mouseY):
 
 
 def gameOver(surface, winner):
-    surface.fill('grey')
     text = 'Checkmate!'
     text2 = f'{winner} wins!!'
-    message = font.render(text, True, 'red')
-    message2 = font.render(text2, True, 'red')
-    msg1_pos = message.get_rect(center=(400, 400))
-    msg2_pos = message2.get_rect(center=(400, 450))
-    surface.blit(message, msg1_pos)
-    surface.blit(message2, msg2_pos)
 
 
 def convertToPygame(row, col):
@@ -184,23 +187,22 @@ while running:
         dragPiece(screen, clicks[0][0], clicks[0][1], mouse[0], mouse[1])
         if len(clicks) == 2:
             movePiece(clicks[0][0], clicks[0][1], clicks[1][0], clicks[1][1])
-            # update board before trying to calculate ai move
-            screen.fill('green')
-            drawBoard(screen)
-            drawPieces(screen)
-
-            # if board.isCheckMate('white'):
-            #     gameOver(screen, 'Black')
-            #     running = False
-            # elif board.isCheckMate('black'):
-            #     gameOver(screen, 'White')
-            #     running = False
+            if board.isCheckMate('white'):
+                gameOver(screen, 'Black')
+            elif board.isCheckMate('black'):
+                gameOver(screen, 'White')
             clicks.clear()
 
     pygame.display.flip()
-    if board.currentTurn == 'black':
-        board.aiMove()
     clock.tick(60)
 
-
 pygame.quit()
+
+import time
+start = time.time()
+minimaxScore = minimax(board, 4, -10000000000, 10000000000)
+move = findBestMove(board, 4)
+print(f'Minimax score: {minimaxScore}')
+print(f"Best move: {move}")
+print(f"Time taken: {time.time() - start} sec")
+

@@ -1,7 +1,8 @@
 from evaluation import evaluate
+from main import Board
 
 
-def minimax(board, depth, alpha, beta):
+def minimax(board, depth):
     
     maximize = True
     color = board.currentTurn
@@ -31,7 +32,7 @@ def minimax(board, depth, alpha, beta):
 
     for move in allmoves:
         moveInfo = board.makeMove(move[0], move[1], move[2], move[3])
-        returnedScore = minimax(board, depth-1, alpha, beta)
+        returnedScore = minimax(board, depth-1)
         board.undoMove(moveInfo)
 
 
@@ -39,16 +40,12 @@ def minimax(board, depth, alpha, beta):
 
             if returnedScore > bestScore:
                 bestScore = returnedScore
-                alpha = max(alpha, bestScore)
 
         else:
 
             if returnedScore < bestScore:
                 bestScore = returnedScore
-                beta = min(beta, bestScore)
     
-        if alpha >= beta:
-            break
     return bestScore
 
 
@@ -64,29 +61,22 @@ def findBestMove(board, depth):
         bestScore = -10000000000
     else:
         bestScore = 10000000000
-
-    alpha = -10000000000
-    beta = 10000000000
     
     bestMove = None
 
     for move in allmoves:
         moveInfo = board.makeMove(move[0], move[1], move[2], move[3])
-        returnedScore = minimax(board, depth-1, alpha, beta)
+        returnedScore = minimax(board, depth-1)
         board.undoMove(moveInfo)
 
         if maximize:
             if returnedScore > bestScore:
                 bestScore = returnedScore
                 bestMove = move
-                alpha = max(alpha, bestScore)
         else:
             if returnedScore < bestScore:
                 bestScore = returnedScore
                 bestMove = move
-                beta = min(beta, bestScore)
-    
-        if alpha >= beta:
-            break
+
 
     return bestMove
