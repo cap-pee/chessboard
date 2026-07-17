@@ -1,6 +1,6 @@
 import pygame
-from main import *
-from ai import *
+from MAIN.main import *
+from MAIN.ai import *
 
 pygame.init()
 

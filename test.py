@@ -1,7 +1,7 @@
 # testing the game logic
 
 
-from main import *
+from MAIN.main import *
 
 board = Board()
 

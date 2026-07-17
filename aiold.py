@@ -1,5 +1,5 @@
-from evaluation import evaluate
-from main import Board
+from MAIN.evaluation import evaluate
+from MAIN.main import Board
 
 
 def minimax(board, depth):

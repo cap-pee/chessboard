@@ -1,7 +1,7 @@
 # for testing timing of the algorithms
 
-from main import *
-from ai import *
+from MAIN.main import *
+from MAIN.ai import *
 
 board = Board()
 board.clearBoard()
